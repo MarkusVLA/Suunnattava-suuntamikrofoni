@@ -1,2 +1,4 @@
 *.DS_Store
 *.zip
+*.kicad_prl
+*.fp_info_cache
