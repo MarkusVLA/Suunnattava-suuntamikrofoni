@@ -2,14 +2,22 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "esp_timer.h"
 #include <SPI.h>
 
 
 static const int buffer_size = 22000;
+static const int sample_rate = 44100; // Hz
+
 static const uint8_t cs = 26;
 static const uint8_t miso = 32;
 static const uint8_t sclk = 25;
 static const uint8_t mosi = 33;
+
+
+// adc timer to get right sample rate.
+hw_timer_t * adc_timer = NULL;
+volatile bool read_ADC_flag = false;
 
 
 // Use double buffering. one for signal reading and second for signal processing.
@@ -23,8 +31,13 @@ SemaphoreHandle_t bufferFilledSemaphore = NULL;
 SemaphoreHandle_t bufferCopiedSemaphore = NULL;
 
 
-int read_ADC(void){
 
+void IRAM_ATTR ADC_timer() {
+    read_ADC_flag = true;
+}
+
+uint16_t read_ADC(void){
+  
   digitalWrite(cs, LOW);
   uint16_t mask;
   SPI.transfer(0x03); // Single ended mode CH0
@@ -34,32 +47,41 @@ int read_ADC(void){
   // mask = mask << 8;                    // shift mask 8 bits to the left
   // mask = mask | (SPI.transfer(0x00)    // OR mask with second part of data
   // mask = mask >> 1;                    // shit completed mask 1 bit to the right to get completed 10 bit int in 16 bit integer
-
   digitalWrite(cs, HIGH);
-  
+
+  while (!read_ADC_flag){
+
+    delayMicroseconds(1);
+
+  }
+  read_ADC_flag = false;
   return mask; 
 
 }
 
-void fill_adc_buffer(u_int16_t * buffer, int buffersize){
+void fill_adc_buffer_at_sample_rate(u_int16_t * buffer, int buffersize){
   // Clear out buffer
   memset(buffer, 0, buffersize * sizeof(uint16_t));
   // fill buffer
   for (int i = 0; i < buffersize; i++){
-    buffer[i] = read_ADC();
+
+      buffer[i] = read_ADC();
+
   }
 }
 
-void core_1_task(void * parameters) {
+
+void core_1_task(void * params) {
 
   while (true){
     // Wait until core 0 signals that the read buffer has been copied and can be filled again safely.
     xSemaphoreTake(bufferCopiedSemaphore, portMAX_DELAY);
     // Fill read buffer
-    fill_adc_buffer(adc_read_buffer, buffer_size);
+    fill_adc_buffer_at_sample_rate(adc_read_buffer, buffer_size);
     // Signal to core 0 that read buffer is full.
     xSemaphoreGive(bufferFilledSemaphore);
   }
+
 }
 
 
@@ -84,6 +106,13 @@ void setup() {
     1,              // priority
     NULL,           // handle
     1);             // core number
+
+    
+  // timer is needed to get consitent sample rate.
+  adc_timer = timerBegin(0, 80, true);  // 80 prescaler for 1MHz on 260MHz ESP32 clock
+  timerAttachInterrupt(adc_timer, &ADC_timer, true); // Attach timer to read_adc
+  timerAlarmWrite(adc_timer, 1000000 / sample_rate , true);  // Set the timer to trigger at sample rate
+  timerAlarmEnable(adc_timer);
 
 }
 
