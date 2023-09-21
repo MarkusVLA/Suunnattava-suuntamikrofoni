@@ -6,6 +6,7 @@
 #include <SPI.h>
 
 
+
 static const int buffer_size = 22000;
 static const int sample_rate = 44100; // Hz
 
@@ -13,6 +14,8 @@ static const uint8_t cs = 26;
 static const uint8_t miso = 32;
 static const uint8_t sclk = 25;
 static const uint8_t mosi = 33;
+
+static const uint16_t SERIAL_SYNC_WORD = 0xFFFF; 
 
 
 // adc timer to get right sample rate.
@@ -37,9 +40,9 @@ void IRAM_ATTR ADC_timer() {
 }
 
 uint16_t read_ADC(void){
-  
-  digitalWrite(cs, LOW);
   uint16_t mask;
+
+  digitalWrite(cs, LOW);
   SPI.transfer(0x03); // Single ended mode CH0
   mask = mask | ((SPI.transfer(0x00) << 8) | SPI.transfer(0x00)) >> 1;
 
@@ -91,7 +94,7 @@ void setup() {
   pinMode(cs, OUTPUT);
   SPI.begin(sclk, miso, mosi);
   SPISettings test_setting;
-  test_setting._clock = 4e6;
+  test_setting._clock = 1e6;
   SPI.beginTransaction(test_setting);
 
   bufferFilledSemaphore = xSemaphoreCreateBinary();
@@ -109,7 +112,7 @@ void setup() {
 
     
   // timer is needed to get consitent sample rate.
-  adc_timer = timerBegin(0, 80, true);  // 80 prescaler for 1MHz on 260MHz ESP32 clock
+  adc_timer = timerBegin(0, 80, true);  // prescaler ESP32 clock
   timerAttachInterrupt(adc_timer, &ADC_timer, true); // Attach timer to read_adc
   timerAlarmWrite(adc_timer, 1000000 / sample_rate , true);  // Set the timer to trigger at sample rate
   timerAlarmEnable(adc_timer);
@@ -136,6 +139,33 @@ float benchmark_adc(uint16_t * buffer, int buffersize){
 
 }
 
+void moving_avarage_filter(uint16_t * dsp_buffer, int buffer_length, int window_size = 3){
+
+  if (window_size <= 0 || window_size > buffer_length) return;
+  int window_sum = 0;
+
+  for (int i = 0; i < buffer_length; i++){
+    if (buffer_length - i >= window_size){
+      for (int j = 0; j < window_size; j++){
+        window_sum += dsp_buffer[i + j];
+      }
+      dsp_buffer[i] = window_sum / window_size;
+      window_sum = 0;
+    }
+  }
+}
+
+
+void log_data_to_serial(uint16_t data){
+
+  //Serial.write((byte*)&SERIAL_SYNC_WORD, sizeof(SERIAL_SYNC_WORD));  // Send sync word
+  //Serial.write((byte*)&data, sizeof(data));
+  //Serial.write(10);  // Send data as binary
+  Serial.printf("%d\n",data);
+
+}
+
+
 void loop() {
 
   float sample_rate_kHz;
@@ -152,15 +182,16 @@ void loop() {
         // Tell core 1 buffer has been copied.
       xSemaphoreGive(bufferCopiedSemaphore);
 
-      Serial.printf("\n\n\nSample rate %2fkHz\nBuffer sample:\n", sample_rate_kHz);
-      for (int i = 0; i < 10; i++){
+      moving_avarage_filter(dsp_buffer, buffer_size, 10);
 
-        Serial.printf("%d, ",dsp_buffer[i]); 
+      // Serial.printf("\n\n\nSample rate %2fkHz\nBuffer sample:\n", sample_rate_kHz);
+      for (int i = 0; i < buffer_size; i++){
+
+        //Serial.printf("\n\n%d,", dsp_buffer[i]);
+        log_data_to_serial(dsp_buffer[i]);
 
       }
-    
     }
-    
   }
 
   // Free memory.
