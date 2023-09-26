@@ -4,7 +4,7 @@
 #include "freertos/semphr.h"
 #include "esp_timer.h"
 
-#include "ADS8688.cpp"
+#include "ADS8688.h"
 #include <SPI.h>
 
 static const int buffer_size = 22000;
@@ -14,12 +14,6 @@ static const uint8_t cs = 26;
 static const uint8_t miso = 32;
 static const uint8_t sclk = 25;
 static const uint8_t mosi = 33;
-
-
-// adc timer to get right sample rate.
-hw_timer_t * adc_timer = NULL;
-volatile bool read_ADC_flag = false;
-
 
 // Use double buffering. one for signal reading and second for signal processing.
 uint16_t * adc_read_buffer = new uint16_t [buffer_size]; // Data is read in to this buffer
@@ -34,32 +28,6 @@ SemaphoreHandle_t bufferCopiedSemaphore = NULL;
 
 // ADC object.
 ADS8688 ADC;
-
-
-
-uint16_t readADC(){  
-
-  float voltage;
-
-  // // Wait for correct timing 
-  // while (!read_ADC_flag){
-  //   ;;
-  // }
-
-  // for (byte i=0;i<8;i++) {
-
-    return  ADC.noOp();     
-  // }
-
-
-}
-
-
-
-
-void IRAM_ATTR ADC_timer() {
-    read_ADC_flag = true;
-}
 
 
 void fillADCReadBuffer(uint16_t * buffer, int buffersize){
@@ -110,13 +78,6 @@ void setup() {
     NULL,           // handle
     1);             // core number
 
-    
-  // timer is needed to get consitent sample rate.
-  // adc_timer = timerBegin(0, 80, true);  // prescaler ESP32 clock
-  // timerAttachInterrupt(adc_timer, &ADC_timer, true); // Attach timer to read_adc
-  // timerAlarmWrite(adc_timer, 1000000 / sample_rate , true);  // Set the timer to trigger at sample rate
-  // timerAlarmEnable(adc_timer);
-
 }
 
 
@@ -157,15 +118,6 @@ void loop() {
   xSemaphoreGive(bufferCopiedSemaphore);
 
   while(true){ 
-
-    // uint16_t val = ADC.noOp();         // trigger samples
-    // float voltage = ADC.valToVoltage(val);
-    // Serial.printf("val: %f\n" , voltage);
-
-    // Serial.printf("val: %f\n" , readADC());
-    
-
-    // delay(100);
 
     if (xSemaphoreTake(bufferFilledSemaphore, portMAX_DELAY) == pdTRUE) {
 

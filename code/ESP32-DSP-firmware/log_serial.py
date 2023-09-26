@@ -24,6 +24,7 @@ class SerialLogger:
                     pass
 
 
+
     def save_read_buffer(self):
         with open(self.out_file, "w") as out_f:
             for value in self.serial_read_buffer:
@@ -78,12 +79,11 @@ def main(args):
     port = sys.argv[1]
     baud = int(sys.argv[2])
 
-    logger = SerialLogger(PORT=port, BAUD_RATE=baud, serial_read_buffer_size=44100, output_file="serial_out.txt")
+    logger = SerialLogger(PORT=port, BAUD_RATE=baud, serial_read_buffer_size=10000, output_file="serial_out.txt")
 
     print(f"Reading from serial port {port} at baud {baud}")
     logger.fill_read_buffer()
     logger.save_read_buffer()
-    print(f"saved data to serial_out.txt")
 
     if ("-G") in args:
         logger.plot_and_save()
