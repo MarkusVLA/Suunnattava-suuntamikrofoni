@@ -11,7 +11,7 @@
 #include "esp_timer.h"
 
 #define SPI_SCLK_SPEED 20e6
-#define ADC_SAMPLE_RATE 44100
+#define ADC_SAMPLE_RATE 100e3
 
 // ADS8688 Pin Definitions
 #define ADS8688_CS_PIN 15

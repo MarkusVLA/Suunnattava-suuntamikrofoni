@@ -1,5 +1,3 @@
-
-
 #include "ADS8688.h"
 
 
@@ -13,20 +11,20 @@ void IRAM_ATTR ADS8688::ADC_timer() {
     read_ADC_flag = true;
 }
 
-  ADS8688::ADS8688() {
+ADS8688::ADS8688() {
 
-    cs = ADS8688_CS_PIN;
-    mode = 0x00;
-    vref = 3.30; 
-    pinMode(cs, OUTPUT);
-    digitalWrite(cs, HIGH);
-    SPI.begin(14, 12, 13);
+  cs = ADS8688_CS_PIN;
+  mode = 0x00;
+  vref = 3.30; 
+  pinMode(cs, OUTPUT);
+  digitalWrite(cs, HIGH);
+  SPI.begin(14, 12, 13);
 
-    adc_timer = timerBegin(0, 80, true);  // prescaler ESP32 clock
-    timerAttachInterrupt(adc_timer, &ADS8688::ADC_timer, true); // Attach timer to read_adc
-    timerAlarmWrite(adc_timer, 1000000 / ADC_SAMPLE_RATE , true);  // Set the timer to trigger at sample rate
-    timerAlarmEnable(adc_timer);
-  }
+  adc_timer = timerBegin(0, 80, true);  // prescaler ESP32 clock
+  timerAttachInterrupt(adc_timer, &ADS8688::ADC_timer, true); // Attach timer to read_adc
+  timerAlarmWrite(adc_timer, 1000000 / ADC_SAMPLE_RATE , true);  // Set the timer to trigger at sample rate
+  timerAlarmEnable(adc_timer);
+}
 
 
 
@@ -59,7 +57,7 @@ void ADS8688::fillReadBuffer(uint16_t * buffer, int buffersize){
     while(!read_ADC_flag){
         ;;
       }
-
+       
       digitalWrite(ADS8688_CS_PIN, LOW);
       buffer[i] = (uint16_t) SPI.transfer32(NO_OP);
       read_ADC_flag = false;
