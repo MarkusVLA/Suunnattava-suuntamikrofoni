@@ -4,63 +4,80 @@
 #include "freertos/semphr.h"
 #include "esp_timer.h"
 
+#include "buffer.h"
 #include "playbackQueue.h"
 #include "ADS8688.h"
 #include <SPI.h>
+#include <cstdint>
 
-static const int buffer_size = 1024;
-static const int sample_rate = 44100; // Hz
+// Buffer characteristics
+static const int buffer_size = 100;
+static const int numberOfADCChannels = 6;
 
-static const uint8_t cs = 26;
-static const uint8_t miso = 32;
-static const uint8_t sclk = 25;
-static const uint8_t mosi = 33;
-
+// ADC controll object.
+ADS8688 ADC(numberOfADCChannels);
 // Use double buffering. one for signal reading and second for signal processing.
-uint16_t * adc_read_buffer = new uint16_t [buffer_size]; // Data is read in to this buffer
-uint16_t * dsp_buffer = new uint16_t [buffer_size];      // Data is processed in this buffer.
+Buffer adc_read_buffer(numberOfADCChannels, buffer_size); // data is read from adc to this buffer.
+Buffer dsp_buffer(numberOfADCChannels, buffer_size);      // Data is processed in this buffer.
+
 // Playback queue buffer.
 playbackQueue playbackBuffer;
 
-// Buffer has been filled
-SemaphoreHandle_t bufferFilledSemaphore = NULL;
-// Buffer has been copied
-SemaphoreHandle_t bufferCopiedSemaphore = NULL;
+// process semaphores
+SemaphoreHandle_t bufferFilledSemaphore = NULL; // Read buffer has been filled
+SemaphoreHandle_t bufferCopiedSemaphore = NULL; // Read buffer has been copied
 
-
-// ADC object.
-ADS8688 ADC;
-
-
-
-void fillADCReadBuffer(uint16_t * buffer, int buffersize){
-  ADC.fillReadBuffer(buffer, buffer_size);
+void fillADCReadBuffer(Buffer &buffer){
+  ADC.fillReadBuffer(buffer);
 }
 
+float benchmark_adc(Buffer &buffer){
+  // Measure ADC sample rate.
+  unsigned long start_time, end_time;
+  start_time = micros();
+  ADC.fillReadBuffer(buffer);
+  end_time = micros();
+  unsigned long elapsedTime = end_time - start_time;
+  float sample_rate = (float) buffer.getYDim() / (elapsedTime / 1000000.0);  // samples per second
+  return sample_rate;
+}
+
+void log_data_to_serial(float data){
+  Serial.printf("%f\n",data);
+}
+
+void pushDataToPlayback(float data){
+  playbackBuffer.pushBack(data);
+}
+
+float popDataFromPlayback(void){
+  return playbackBuffer.popHead();
+}
 
 void core_1_task(void * params) {
   while (true){
     // Wait until core 0 signals that the read buffer has been copied and can be filled again safely.
     xSemaphoreTake(bufferCopiedSemaphore, portMAX_DELAY);
     // Fill read buffer
-    fillADCReadBuffer(adc_read_buffer, buffer_size);
+    fillADCReadBuffer(adc_read_buffer);
     // Signal to core 0 that read buffer is full.
     xSemaphoreGive(bufferFilledSemaphore);
   }
 }
 
+void setup() {
 
-void setup() {  
   // Initalize ads8688
-  ADC.setChannelSPD(0x01); // Channel selection.
-  ADC.setGlobalRange(VREF);
-  ADC.autoRst();
+  ADC.setChannelSPD(0B00111111); // Channel selection (0B00111111: channels 0 to 5 are active )
+  ADC.setGlobalRange(VREF);      // Set adc voltage refernce flag
+  ADC.autoRst();                 // Set ADC to auto reset mode
 
-  Serial.begin(900000);
+  Serial.begin(115200);
 
   bufferFilledSemaphore = xSemaphoreCreateBinary();
   bufferCopiedSemaphore = xSemaphoreCreateBinary();
 
+  xSemaphoreGive(bufferCopiedSemaphore);
 
   xTaskCreatePinnedToCore(
     core_1_task,   
@@ -71,74 +88,35 @@ void setup() {
     NULL,           // handle
     1);             // core number
 
-}
-
-
-float benchmark_adc(uint16_t * buffer, int buffersize){
-  unsigned long start_time, end_time;
-  start_time = micros();
-  ADC.fillReadBuffer(buffer, buffer_size);
-  end_time = micros();
-  unsigned long elapsedTime = end_time - start_time;
-  float sample_rate = (float)buffersize / (elapsedTime / 1000000.0);  // samples per second
-  return sample_rate;
+    Serial.printf("Setup complete.");
 
 }
-
-
-
-void log_data_to_serial(float data){
-  Serial.printf("%f\n",data);
-}
-
-void addDataToPlayback(float data){
-  playbackBuffer.pushBack(data);
-}
-
-float popDataFromPlayback(void){
-  return playbackBuffer.popHead();
-}
-
 
 void loop() {
 
   float sample_rate_kHz;
-  sample_rate_kHz =  benchmark_adc(adc_read_buffer, buffer_size) / 1e3;
-  xSemaphoreGive(bufferCopiedSemaphore);
-
-
+  sample_rate_kHz =  benchmark_adc(adc_read_buffer) / 1e3;
   
-
   while(true){ 
 
     if (xSemaphoreTake(bufferFilledSemaphore, portMAX_DELAY) == pdTRUE) {
-
       // Copy data from adc_read_buffer to dsp_buffer
-      memcpy(dsp_buffer, adc_read_buffer, buffer_size * sizeof(uint16_t));
-        // Tell core 1 buffer has been copied.
+      dsp_buffer.copyBuffer(adc_read_buffer);
+      // Tell core 1 buffer has been copied.
       xSemaphoreGive(bufferCopiedSemaphore);
     }
 
-    //  Serial.printf("\n\n\nSample rate %2fkHz\nBuffer sample:\n", sample_rate_kHz);
-    // for (int i = 0; i < 3; i++){
-    //   Serial.printf("Val: %D, ", dsp_buffer[i]); // convert data to range 0-1;
-    // }
-
-
-    // Serial.printf("\n\n\nSample rate %2fkHz\nBuffer sample:\n", sample_rate_kHz);
-    for (int i = 0; i < buffer_size; i++){
-      addDataToPlayback((float) dsp_buffer[i] / 65535); // convert data to range 0-1;
+    Serial.printf("\n\nSampling %d channels at %fkHz/ch.\n", dsp_buffer.getXDim(), sample_rate_kHz);
+    for (int i = 0; i < dsp_buffer.getXDim(); i++){
+      Serial.printf("%d, ", dsp_buffer.getValue(i,0));  
     }
+    
 
 
-    while (!playbackBuffer.isEmpty()) {
-      log_data_to_serial(popDataFromPlayback());
-    }
+    delay(500);
+
+
 
   }
-
-  // Free memory.
-  delete [] adc_read_buffer;
-  delete [] dsp_buffer;
 
 }

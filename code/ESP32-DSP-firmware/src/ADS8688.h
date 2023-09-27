@@ -7,11 +7,11 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-
 #include "esp_timer.h"
+#include "buffer.h"
 
-#define SPI_SCLK_SPEED 20e6
-#define ADC_SAMPLE_RATE 100e3
+#define SPI_SCLK_SPEED 20e6 
+#define ADC_SAMPLE_RATE 44.1e3 // Set sample rate here
 
 // ADS8688 Pin Definitions
 #define ADS8688_CS_PIN 15
@@ -69,17 +69,18 @@ private:
     float vref;
     uint8_t cs;
     int mode;
+    int nChannels;
 
     static volatile bool read_ADC_flag;
     static hw_timer_t * adc_timer;
 
 public:
-    ADS8688();
+    ADS8688(int nChannels);
 
     static void IRAM_ATTR ADC_timer();
 
     void writeRegister(uint8_t reg, uint8_t val);
-    void fillReadBuffer(uint16_t * buffer, int buffersize);
+    void fillReadBuffer(Buffer &buffer);
     uint16_t cmdRegister(uint8_t reg);
     void setChannelSPD(uint8_t flag);
     void setChannelSequence(uint8_t flag);

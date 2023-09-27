@@ -1,7 +1,6 @@
 #include "ADS8688.h"
 
 
-
 // Static member variable definitions
 volatile bool ADS8688::read_ADC_flag = false;
 hw_timer_t * ADS8688::adc_timer = NULL;
@@ -11,11 +10,12 @@ void IRAM_ATTR ADS8688::ADC_timer() {
     read_ADC_flag = true;
 }
 
-ADS8688::ADS8688() {
+ADS8688::ADS8688(int n_Channels) {
 
   cs = ADS8688_CS_PIN;
   mode = 0x00;
-  vref = 3.30; 
+  vref = 3.30;
+  nChannels = n_Channels;  // number of channels to use.
   pinMode(cs, OUTPUT);
   digitalWrite(cs, HIGH);
   SPI.begin(14, 12, 13);
@@ -45,23 +45,24 @@ void ADS8688::writeRegister(uint8_t reg, uint8_t val) {
 }
 
 
-
-  // Fast boi
-void ADS8688::fillReadBuffer(uint16_t * buffer, int buffersize){
+// Fast boi
+void ADS8688::fillReadBuffer(Buffer &buffer){
+  // Buffer is a 2d array where each row is a different channel.
 
   SPI.beginTransaction(SPISettings(SPI_SCLK_SPEED, MSBFIRST, SPI_MODE1));
 
-  for (int i = 0; i < buffersize; i++){
-    
+  for (int i = 0; i < buffer.getYDim(); i++){
     // Wait for correct timing
     while(!read_ADC_flag){
         ;;
       }
-       
-      digitalWrite(ADS8688_CS_PIN, LOW);
-      buffer[i] = (uint16_t) SPI.transfer32(NO_OP);
-      read_ADC_flag = false;
-      digitalWrite(ADS8688_CS_PIN, HIGH);
+      // Get value from each active channel 
+      for (int j = 0; j < buffer.getXDim(); j++){
+        digitalWrite(ADS8688_CS_PIN, LOW);
+        buffer.setValue((uint16_t) SPI.transfer32(NO_OP), j, i); // Check that x and y are the correct way aroudn.
+        read_ADC_flag = false;
+        digitalWrite(ADS8688_CS_PIN, HIGH);
+      }
     }
   
     SPI.endTransaction();
