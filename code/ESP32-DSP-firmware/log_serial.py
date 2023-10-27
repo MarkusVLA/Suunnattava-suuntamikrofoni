@@ -101,7 +101,7 @@ def main(args):
     port = sys.argv[1]
     baud = int(sys.argv[2])
 
-    logger = SerialLogger(PORT=port, BAUD_RATE=baud, serial_read_buffer_size=45000, output_file="serial_out.txt")
+    logger = SerialLogger(PORT=port, BAUD_RATE=baud, serial_read_buffer_size=1000, output_file="serial_out.txt")
 
     print(f"Reading from serial port {port} at baud {baud}")
     logger.fill_read_buffer()

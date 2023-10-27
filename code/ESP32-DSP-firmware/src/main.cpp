@@ -8,10 +8,11 @@
 #include "playbackQueue.h"
 #include "ADS8688.h"
 #include <SPI.h>
+
 #include <cstdint>
 
 // Buffer characteristics
-static const int buffer_size = 100;
+static const int buffer_size = 2048;
 static const int numberOfADCChannels = 6;
 
 // ADC controll object.
@@ -82,14 +83,12 @@ void setup() {
   xTaskCreatePinnedToCore(
     core_1_task,   
     "Fill ADC read buffer",     
-    10000,          // Stack size
+    10024,          // Stack size
     NULL,           // Input
     1,              // priority
     NULL,           // handle
-    1);             // core number
-
+    1);             // core number // using core 0 to read adc while core 1 performs signal processing. //
     Serial.printf("Setup complete.");
-
 }
 
 void loop() {
@@ -106,17 +105,22 @@ void loop() {
       xSemaphoreGive(bufferCopiedSemaphore);
     }
 
+
     Serial.printf("\n\nSampling %d channels at %fkHz/ch.\n", dsp_buffer.getXDim(), sample_rate_kHz);
     for (int i = 0; i < dsp_buffer.getXDim(); i++){
       Serial.printf("%d, ", dsp_buffer.getValue(i,0));  
     }
-    
 
 
-    delay(500);
+    // Serial.printf("\n\nSampling %d channels at %fkHz/ch.\n", dsp_buffer.getXDim(), sample_rate_kHz);
+    // for (int i = 0; i < dsp_buffer.getYDim(); i++){
+    //   pushDataToPlayback(dsp_buffer.getValue(0,i));
+    // }
 
 
-
+    // while (!playbackBuffer.isEmpty()){
+    //   log_data_to_serial(playbackBuffer.popHead());
+    // }
   }
 
 }
