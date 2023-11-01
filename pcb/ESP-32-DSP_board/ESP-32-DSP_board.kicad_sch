@@ -5998,21 +5998,21 @@
   (symbol (lib_id "Device:R_Potentiometer") (at 332.74 238.76 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 5fb0b50c-8432-4b65-924b-ec719f9edf8b)
-    (property "Reference" "RV2" (at 330.2 237.49 0)
+    (property "Reference" "RV2" (at 330.835 237.49 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Value" "R_Potentiometer" (at 331.47 244.475 0)
+    (property "Value" "10k" (at 330.2 240.03 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Footprint" "Potentiometer_SMD:Potentiometer_ACP_CA6-VSMD_Vertical" (at 332.74 238.76 0)
+    (property "Footprint" "Potentiometer_SMD:Potentiometer_Bourns_3214J_Horizontal" (at 332.74 238.76 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 332.74 238.76 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 40d6726d-0a9e-497c-be33-4fcfec48b9d2))
-    (pin "2" (uuid 4d939608-b10b-459d-97d4-886f4faafd07))
-    (pin "3" (uuid 803fb495-a608-4a56-bdbf-ab6409a8147d))
+    (pin "1" (uuid 5975c899-1fca-44e6-8860-3606a96672ab))
+    (pin "2" (uuid fc0b2c90-1b85-4cc0-8769-d7619888a4fa))
+    (pin "3" (uuid 7ace08b0-80de-4e4a-b7d2-50d6f46d09eb))
     (instances
       (project "ESP-32-DSP_board"
         (path "/dad0232a-114f-4b67-b87a-73e2a6fc6101"
@@ -6566,8 +6566,8 @@
     (property "Datasheet" "~" (at 354.33 214.63 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid aa114cca-e70e-475c-b635-605156226e9f))
-    (pin "2" (uuid bcfc4837-0712-4bd3-b5f2-965786a899da))
+    (pin "1" (uuid 6b008554-135a-42a6-9997-65ad6d0e27fe))
+    (pin "2" (uuid 318de403-a416-4b0f-b41b-11f7ead4d41f))
     (instances
       (project "ESP-32-DSP_board"
         (path "/dad0232a-114f-4b67-b87a-73e2a6fc6101"
@@ -7379,18 +7379,18 @@
     (property "Reference" "RV1" (at 316.23 210.82 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Value" "R_Potentiometer" (at 317.5 217.805 0)
+    (property "Value" "10k" (at 317.5 217.805 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Footprint" "Potentiometer_SMD:Potentiometer_ACP_CA6-VSMD_Vertical" (at 318.77 212.09 0)
+    (property "Footprint" "Potentiometer_SMD:Potentiometer_Bourns_3214J_Horizontal" (at 318.77 212.09 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 318.77 212.09 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 161bd103-a1c5-442b-af14-ff168ee684fd))
-    (pin "2" (uuid 60359d17-76be-4218-90d0-9488cf6453c6))
-    (pin "3" (uuid 7fd29f84-454e-4759-b340-9ab8b1ade373))
+    (pin "1" (uuid 8a08b3fd-0f7e-4bfd-8b59-55ea6686ace6))
+    (pin "2" (uuid a55fb44a-4d43-4e8a-8d24-e0fbc09f389f))
+    (pin "3" (uuid 889e6f92-5f6d-47bf-8c4c-5251df261e7b))
     (instances
       (project "ESP-32-DSP_board"
         (path "/dad0232a-114f-4b67-b87a-73e2a6fc6101"
