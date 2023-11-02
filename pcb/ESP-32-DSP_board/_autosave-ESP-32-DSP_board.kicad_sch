@@ -5513,7 +5513,7 @@
     (property "Value" "Conn_Coaxial" (at 51.435 113.3232 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical" (at 55.245 114.3 0)
+    (property "Footprint" "RF_Antenna:Texas_SWRA117D_2.4GHz_Right" (at 55.245 114.3 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" " ~" (at 55.245 114.3 0)
