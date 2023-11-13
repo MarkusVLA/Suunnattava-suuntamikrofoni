@@ -1,4 +1,4 @@
-﻿Designator,Footprint,Quantity,Value,LCSC Part #
+﻿Designator,Footprint,Quantity,Value,
 "C1, C17",0805,2,22u,
 "C10, C2, C29, C38, C39, C7, C8",0603,7,10u,
 "C11, C12, C14, C15, C3, C31, C32, C36, C37, C4, C6, C9",0402,12,100n,
@@ -22,6 +22,7 @@ R3,0402,1,1k,
 "RV1, RV2",Potentiometer_Bourns_3214J_Horizontal,2,10k,
 SW1,SW_Push_SPST_NO_Alps_SKRK,1,Reset,
 SW2,SW_Push_SPST_NO_Alps_SKRK,1,Boot,
+"TP1, TP2, TP3, TP4, TP5, TP6, TP7, TP8",TestPoint_Pad_D1.0mm,8,TestPoint,
 U1,SOT-223-3_TabPin2,1,AZ1117IH-3.3,
 U2,TSSOP-16_4.4x5mm_P0.65mm,1,AD5689BRUZ,
 U3,SOT-666,1,USBLC6-2P6,
