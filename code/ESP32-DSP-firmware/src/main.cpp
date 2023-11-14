@@ -3,6 +3,7 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_timer.h"
+#include "serialstreambuf.hpp"
 
 #include "buffer.h"
 #include "playbackQueue.h"
