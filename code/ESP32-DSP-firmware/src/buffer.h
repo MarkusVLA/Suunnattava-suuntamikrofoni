@@ -4,6 +4,7 @@
 #define BUFFER_H
 
 #include <Arduino.h>
+#include <iostream>
 
 class Buffer{
 
@@ -28,6 +29,8 @@ public:
     void copyBuffer(Buffer &bufferToCopy); // copies all values from argument buffer data buffer to instance data
     void zero(void); // Zero out entire buffer data.
     const uint16_t * getCollumn(int col) const;// get a pointer to the collumn of the buffer
+
+    friend std::ostream& operator<<(std::ostream &os, Buffer &buffer); // print a sample of the buffer to serial out
 
 };
 

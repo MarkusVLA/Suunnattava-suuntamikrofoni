@@ -1,4 +1,10 @@
-// ADS8688.h
+/**
+ * @file ADS8688.h
+ * @brief ADS8688 ADC SPI interface
+ * @version 0.1
+ * 
+ * 
+ */
 
 #ifndef ADS8688_H
 #define ADS8688_H
@@ -13,11 +19,11 @@
 #define SPI_SCLK_SPEED 20e6 
 #define ADC_SAMPLE_RATE 44.1e3 // Set sample rate here
 
-// ADS8688 Pin Definitions
-#define ADS8688_CS_PIN 15
-#define ADS8688_SCLK_PIN 14
-#define ADS8688_MOSI_PIN 13
-#define ADS8688_MISO_PIN 12
+// ADS8688 Pin Definitions for esp 
+#define ADS8688_CS_PIN 4
+#define ADS8688_SCLK_PIN 5
+#define ADS8688_MOSI_PIN 2
+#define ADS8688_MISO_PIN 3
 
 #define WRITE 1
 #define READ 0
@@ -63,6 +69,7 @@
 #define CH7_EN 0x80
 
 #define VREF 0x06
+
 
 class ADS8688 {
 private:

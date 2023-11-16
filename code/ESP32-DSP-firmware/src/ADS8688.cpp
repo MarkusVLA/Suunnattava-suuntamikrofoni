@@ -18,12 +18,13 @@ ADS8688::ADS8688(int n_Channels) {
   nChannels = n_Channels;  // number of channels to use.
   pinMode(cs, OUTPUT);
   digitalWrite(cs, HIGH);
-  SPI.begin(14, 12, 13);
+  SPI.begin(ADS8688_SCLK_PIN, ADS8688_MISO_PIN, ADS8688_MOSI_PIN); // S3 config 
 
   adc_timer = timerBegin(0, 80, true);  // prescaler ESP32 clock
   timerAttachInterrupt(adc_timer, &ADS8688::ADC_timer, true); // Attach timer to read_adc
   timerAlarmWrite(adc_timer, 1000000 / ADC_SAMPLE_RATE , true);  // Set the timer to trigger at sample rate
   timerAlarmEnable(adc_timer);
+  
 }
 
 

@@ -9,7 +9,11 @@
 #include "playbackQueue.h"
 #include "ADS8688.h"
 #include <SPI.h>
+#include <WiFi.h>
+#include <Stream.h>
+#include <iostream>
 
+#include "taskmanager.hpp"
 #include <cstdint>
 
 // Buffer characteristics
@@ -74,26 +78,23 @@ void setup() {
   ADC.setGlobalRange(VREF);      // Set adc voltage refernce flag
   ADC.autoRst();                 // Set ADC to auto reset mode
 
-  Serial.begin(115200);
-
+  Serial.begin(250000);
+  // Turning off the WiFi
+  WiFi.mode(WIFI_OFF);
   bufferFilledSemaphore = xSemaphoreCreateBinary();
   bufferCopiedSemaphore = xSemaphoreCreateBinary();
-
   xSemaphoreGive(bufferCopiedSemaphore);
-
-  xTaskCreatePinnedToCore(
-    core_1_task,   
-    "Fill ADC read buffer",     
-    10024,          // Stack size
-    NULL,           // Input
-    1,              // priority
-    NULL,           // handle
-    1);             // core number // using core 0 to read adc while core 1 performs signal processing. //
-    Serial.printf("Setup complete.");
+  // Initialize TaskManager and add tasks
+  TaskManager taskManager;
+  taskManager.addTask(TaskConfig(core_1_task, "Fill ADC read buffer", 10024, NULL, 1, 1));
+  taskManager.startTask();
+  
 }
 
 void loop() {
 
+  SerialStreambuf espout; // IO stream for serial port
+  std::ostream serialOut(&espout);
   float sample_rate_kHz;
   sample_rate_kHz =  benchmark_adc(adc_read_buffer) / 1e3;
   
@@ -104,24 +105,12 @@ void loop() {
       dsp_buffer.copyBuffer(adc_read_buffer);
       // Tell core 1 buffer has been copied.
       xSemaphoreGive(bufferCopiedSemaphore);
+
     }
 
+    serialOut << "\n\n Sampling " << dsp_buffer.getXDim() << " channels at " << sample_rate_kHz << " kHz/ch." << std::endl;
+    serialOut << dsp_buffer << std::endl;
 
-    Serial.printf("\n\nSampling %d channels at %fkHz/ch.\n", dsp_buffer.getXDim(), sample_rate_kHz);
-    for (int i = 0; i < dsp_buffer.getXDim(); i++){
-      Serial.printf("%d, ", dsp_buffer.getValue(i,0));  
-    }
-
-
-    // Serial.printf("\n\nSampling %d channels at %fkHz/ch.\n", dsp_buffer.getXDim(), sample_rate_kHz);
-    // for (int i = 0; i < dsp_buffer.getYDim(); i++){
-    //   pushDataToPlayback(dsp_buffer.getValue(0,i));
-    // }
-
-
-    // while (!playbackBuffer.isEmpty()){
-    //   log_data_to_serial(playbackBuffer.popHead());
-    // }
   }
 
 }

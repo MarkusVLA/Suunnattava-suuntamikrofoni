@@ -72,3 +72,12 @@ void Buffer::zero(void){
     }
 
 } // Zero out entire buffer data.
+
+
+std::ostream& operator<<(std::ostream &os, Buffer &buffer) {
+    for (int i = 0; i < buffer.getXDim(); i++){
+        os << buffer.getValue(i, 0) << ", ";
+    }
+    
+    return os;
+}
