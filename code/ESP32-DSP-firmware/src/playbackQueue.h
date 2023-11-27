@@ -2,17 +2,18 @@
 // playbackQueue.h
 
 #include <Arduino.h>
+#include <iostream>
 
 #ifndef PLAYBACKQUEUE_H
 #define PLAYBACKQUEUE_H
 
 
-typedef struct Node {
+struct Node {
 
     float val;
     Node * next;
 
-} Node;
+};
 
 
 
@@ -25,6 +26,7 @@ private:
     Node * tail;
 
 public:
+
     playbackQueue();
     ~playbackQueue();
 
@@ -32,6 +34,7 @@ public:
     void pushBack(float value);     // Add value to back of the queue
     bool isEmpty() const;           // Check if the queue is empty
     int getSize() const;            // Return the size of the queue
+    friend std::ostream& operator<<(std::ostream &os, playbackQueue &buffer); // print a sample of the queue to serial out
 
 };
 

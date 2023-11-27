@@ -10,13 +10,9 @@
 #ifndef TASKMANAGER_HPP
 #define TASKMANAGER_HPP
 
-#include <string>
-#include <queue>
-#include <vector>
-
+#include "taskqueue.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/semphr.h"
 
 
 struct TaskConfig {
@@ -53,21 +49,21 @@ class TaskManager {
 
 private:
     // Hold task in a priority queue.
-    std::priority_queue<TaskConfig, std::vector<TaskConfig>, ComparePriority> taskQueue_;
+    TaskQueue<TaskConfig> taskQueue_;
 
 public:
 
     TaskManager() { }
     ~TaskManager() { }
     
-    void addTask(const TaskConfig &task){
-        taskQueue_.push(task);
+    void addTask(const TaskConfig &task, int priority) {
+        taskQueue_.enqueue(task, priority);
     }
-    
+
     void startTask() {
-        while (!taskQueue_.empty()){
+        while (!taskQueue_.isEmpty()){
             // Get highest priority task:
-            const TaskConfig &config = taskQueue_.top();
+            const TaskConfig &config = taskQueue_.dequeue();
             // start task
             xTaskCreatePinnedToCore(
                 config.taskFunction_,
@@ -78,7 +74,6 @@ public:
                 nullptr,
                 config.core_
             );
-            taskQueue_.pop();
         }   
     }
 

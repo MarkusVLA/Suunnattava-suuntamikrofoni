@@ -16,8 +16,8 @@
 #include "esp_timer.h"
 #include "buffer.h"
 
-#define SPI_SCLK_SPEED 20e6 
-#define ADC_SAMPLE_RATE 44.1e3 // Set sample rate here
+#define SPI_SCLK_SPEED 40e6 // Spi clock at X MHz
+#define ADC_SAMPLE_RATE 44.1e3 * 2 // Set sample rate here
 
 // ADS8688 Pin Definitions for esp 
 #define ADS8688_CS_PIN 4

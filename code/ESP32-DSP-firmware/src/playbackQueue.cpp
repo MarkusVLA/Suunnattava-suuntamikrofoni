@@ -1,12 +1,6 @@
 #include "playbackQueue.h"
 
-playbackQueue::playbackQueue() {
-
-    len = 0;
-    head = nullptr;
-    tail = nullptr;
-
-}
+playbackQueue::playbackQueue():len(0), head(nullptr), tail(nullptr) { }
 
 playbackQueue::~playbackQueue() {
     while (!isEmpty()){
@@ -60,5 +54,10 @@ void playbackQueue::pushBack(float value){
     }
 
     len++;
+}
 
+
+std::ostream& operator<<(std::ostream &os, playbackQueue &buffer) {
+    os << buffer.head->val << std::endl; // Peek at the buffers first value.
+    return os;
 }
