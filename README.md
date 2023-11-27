@@ -1,5 +1,7 @@
 # Suunnattava suuntamikrofoni 
 
+![ESP32-DSP Piirikaavio](images/ESP32-DSP_schematic.jpg)
+![ESP32-DSP Piirikortti](images/ESP32-DSP_pcb.jpg)
 
 ## TODO
 * [x] DSP alustan suunnittelu
