@@ -20,55 +20,55 @@
 #define ADC_SAMPLE_RATE 44.1e3 * 2 // Set sample rate here
 
 // ADS8688 Pin Definitions for esp 
-#define ADS8688_CS_PIN 4
-#define ADS8688_SCLK_PIN 5
-#define ADS8688_MOSI_PIN 2
-#define ADS8688_MISO_PIN 3
+#define ADS8688_CS_PIN      4
+#define ADS8688_SCLK_PIN    5
+#define ADS8688_MOSI_PIN    2
+#define ADS8688_MISO_PIN    3
 
-#define WRITE 1
-#define READ 0
+#define WRITE               1
+#define READ                0
 
-#define AUTO_RST 0xA0
-#define STAND_BY_MODE 0x82
-#define RST_PR 0x85
-#define PWR_DN 0x83
-#define NO_OP 0x00
-
-
-#define MAN_CH0 0xC0
-#define MAN_CH1 0xC4
-#define MAN_CH2 0xC8
-#define MAN_CH3 0xCC
-#define MAN_CH4 0xD0
-#define MAN_CH5 0xD4
-#define MAN_CH6 0xD8
-#define MAN_CH7 0xDC
+#define AUTO_RST            0xA0
+#define STAND_BY_MODE       0x82
+#define RST_PR              0x85
+#define PWR_DN              0x83
+#define NO_OP               0x00
 
 
-#define AUTO_SEQ_EN 0x01
-#define CH_PWR_DN 0x02
-#define FEATURE_SELECT 0x03
+#define MAN_CH0             0xC0
+#define MAN_CH1             0xC4
+#define MAN_CH2             0xC8
+#define MAN_CH3             0xCC
+#define MAN_CH4             0xD0
+#define MAN_CH5             0xD4
+#define MAN_CH6             0xD8
+#define MAN_CH7             0xDC
+
+
+#define AUTO_SEQ_EN         0x01
+#define CH_PWR_DN           0x02
+#define FEATURE_SELECT      0x03
 
 // input ranges
-#define CH0_INPUT_RANGE 0x05
-#define CH1_INPUT_RANGE 0x06
-#define CH2_INPUT_RANGE 0x07
-#define CH3_INPUT_RANGE 0x08
-#define CH4_INPUT_RANGE 0x09
-#define CH5_INPUT_RANGE 0x0A
-#define CH6_INPUT_RANGE 0x0B
-#define CH7_INPUT_RANGE 0x0C
+#define CH0_INPUT_RANGE     0x05
+#define CH1_INPUT_RANGE     0x06
+#define CH2_INPUT_RANGE     0x07
+#define CH3_INPUT_RANGE     0x08
+#define CH4_INPUT_RANGE     0x09
+#define CH5_INPUT_RANGE     0x0A
+#define CH6_INPUT_RANGE     0x0B
+#define CH7_INPUT_RANGE     0x0C
 
-#define CH0_EN 0x01
-#define CH1_EN 0x02
-#define CH2_EN 0x04
-#define CH3_EN 0x08
-#define CH4_EN 0x10
-#define CH5_EN 0x20
-#define CH6_EN 0x40
-#define CH7_EN 0x80
+#define CH0_EN              0x01
+#define CH1_EN              0x02
+#define CH2_EN              0x04
+#define CH3_EN              0x08
+#define CH4_EN              0x10
+#define CH5_EN              0x20
+#define CH6_EN              0x40
+#define CH7_EN              0x80
 
-#define VREF 0x06
+#define VREF                0x06
 
 
 class ADS8688 {

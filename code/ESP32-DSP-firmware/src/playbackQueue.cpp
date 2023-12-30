@@ -22,7 +22,7 @@ float playbackQueue::popHead(void) {
     }
 
     Node * temp = head;
-
+    
     float tempVal = temp->val;
     head = temp->next;
     delete temp;

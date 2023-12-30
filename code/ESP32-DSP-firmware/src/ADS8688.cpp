@@ -23,11 +23,8 @@ ADS8688::ADS8688(int n_Channels) {
   adc_timer = timerBegin(0, 80, true);  // prescaler ESP32 clock
   timerAttachInterrupt(adc_timer, &ADS8688::ADC_timer, true); // Attach timer to read_adc
   timerAlarmWrite(adc_timer, 1000000 / ADC_SAMPLE_RATE , true);  // Set the timer to trigger at sample rate
-  timerAlarmEnable(adc_timer);
-  
+  timerAlarmEnable(adc_timer);  
 }
-
-
 
 
 void ADS8688::writeRegister(uint8_t reg, uint8_t val) {
@@ -79,22 +76,12 @@ uint16_t ADS8688::cmdRegister(uint8_t reg) {
   uint32_t result = 0;
   digitalWrite(ADS8688_CS_PIN, LOW);
 
-
   command = (command | reg) << 24;
   result = SPI.transfer32(command);
 
-
-  
-  // SPI.transfer16(reg << 8);
-  // int16_t result = 0;
-  // result = SPI.transfer16(0x0000);
-
   digitalWrite(ADS8688_CS_PIN, HIGH);
   SPI.endTransaction();
-
   return result;
-
-
 }
 
 void ADS8688::setChannelSPD(uint8_t flag) {
@@ -103,11 +90,11 @@ void ADS8688::setChannelSPD(uint8_t flag) {
   }
 
 void ADS8688::setChannelSequence(uint8_t flag) {
-  writeRegister(AUTO_SEQ_EN,flag);
+  writeRegister(AUTO_SEQ_EN, flag);
   }
 
 void ADS8688::setChannelPowerDown(uint8_t flag) {
-  writeRegister(CH_PWR_DN,flag);
+  writeRegister(CH_PWR_DN, flag);
   }
 
 uint8_t ADS8688::readRegister(uint8_t reg) {

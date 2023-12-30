@@ -14,8 +14,8 @@
 #include "taskmanager.hpp"
 
 // Buffer characteristics
-static const int buffer_size = 2048;
-static const int numberOfADCChannels = 6;
+static const int buffer_size = 10000;
+static const int numberOfADCChannels = 1;
 
 // ADC controll object.
 ADS8688 ADC(numberOfADCChannels);
@@ -37,29 +37,18 @@ void fillADCReadBuffer(Buffer &buffer){
 
 float benchmark_adc(Buffer &buffer){
   // Measure ADC sample rate.
-  unsigned long start_time, end_time;
+  unsigned long long start_time, end_time;
   start_time = micros();
   ADC.fillReadBuffer(buffer);
   end_time = micros();
   unsigned long elapsedTime = end_time - start_time;
   float sample_rate = (float) buffer.getYDim() / (elapsedTime / 1000000.0);  // samples per second
   return sample_rate;
-  
 }
 
 void log_data_to_serial(float data){
   Serial.printf("%f\n",data);
 }
-
-// template <typename T>
-// void pushDataToPlayback(T data){
-//   playbackBuffer.pushBack(data);
-// }
-
-// template <typename T>
-// T popDataFromPlayback(void){
-//   return playbackBuffer.popHead();
-// }
 
 void core_1_task(void * params) {
   while (true){
@@ -73,9 +62,8 @@ void core_1_task(void * params) {
 }
 
 void setup() {
-
   // Initalize ads8688
-  ADC.setChannelSPD(0B00111111); // Channel selection (0B00111111: channels 0 to 5 are active )
+  ADC.setChannelSPD(0B00000001); // Channel selection (0B00111111: channels 0 to 5 are active )
   ADC.setGlobalRange(VREF);      // Set adc voltage refernce flag
   ADC.autoRst();                 // Set ADC to auto reset mode
 
@@ -101,32 +89,24 @@ void loop() {
 
   float sample_rate_kHz;
   sample_rate_kHz =  benchmark_adc(adc_read_buffer) / 1e3;
-  
+
   while(true){ 
 
-    // if (xSemaphoreTake(bufferFilledSemaphore, portMAX_DELAY) == pdTRUE) {
-    //   // Copy data from adc_read_buffer to dsp_buffer
-    //   dsp_buffer.copyBuffer(adc_read_buffer);
-    //   // Tell core 1 buffer has been copied.
-    //   xSemaphoreGive(bufferCopiedSemaphore);
+    if (xSemaphoreTake(bufferFilledSemaphore, portMAX_DELAY) == pdTRUE) {
+      // Copy data from adc_read_buffer to dsp_buffer
+      dsp_buffer.copyBuffer(adc_read_buffer);
+      // Tell core 1 buffer has been copied.
+      xSemaphoreGive(bufferCopiedSemaphore);
+    }
 
-    // }
-    // DAC.pushValToQueue(dsp_buffer.getValue(0, 0));
+    serialOut << "BEGIN\n";
+    serialOut << "Sample rate: " << sample_rate_kHz << " kHz\n\n";
 
-    float base = millis()/1000.0f;
-    uint16_t value = 32767.0f + 32766 * sin(base * 2.0f * PI);
-
-    DAC.pushValToQueue(value); // Push 2
-    DAC.setChannelFromQueue(0);
- 
-
-    // serialOut << "\n\n Sampling " << dsp_buffer.getXDim() << " channels at " << sample_rate_kHz << " kHz/ch." << std::endl;
-    // serialOut << dsp_buffer << std::endl;
-
-    serialOut << "Queue: " << DAC << std::endl;
-
-    // DAC.setChannelFromQueue(0);
-
+    
+    for (int i = 0; i < dsp_buffer.getYDim(); i++){
+      // Read data from dsp_buffer
+      serialOut << dsp_buffer.getValue(0, i) << "," << "\n"; // Write data to serial port
+    }
+    serialOut << "END\n";
   }
-
 }

@@ -11,20 +11,18 @@
 AD5689::AD5689(): cs_(DA5689_SYNC) {
     pinMode(cs_, OUTPUT); 
     digitalWrite(cs_, HIGH);
-
     SPI.begin(DA5689_SCLK, DA5689_MISO, DA5689_MOSI);
-
     /**
      * @todo Hardware timer for playback speed.
      * 
      */
-
 }
 
 
 AD5689::~AD5689() { }
 
 void AD5689::setChannelFromQueue(uint8_t channel){
+
     SPI.beginTransaction(SPISettings(SPI_CLOCK, MSBFIRST, SPI_MODE1));
     digitalWrite(cs_, LOW);
 
@@ -34,8 +32,14 @@ void AD5689::setChannelFromQueue(uint8_t channel){
     if (channel == 1) SPI.transfer((CMD_WRITE_TO_INPUT_REG << 4) | ADDR_DAC_A);
     else SPI.transfer((CMD_WRITE_TO_INPUT_REG << 4) | ADDR_DAC_B);
 
-    SPI.transfer(VOut >> 8);
-    SPI.transfer(VOut);
+    // Problem here ?
+    // SPI.transfer(VOut >> 8);
+    // SPI.transfer(VOut);  
+
+    // Test
+    SPI.transfer16(0b0101010101010101); 
+
+    
     digitalWrite(cs_, HIGH);
     SPI.endTransaction();
 
